@@ -4,10 +4,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['my-kanban-project.onrender.com'] // This gives Render permission
+    allowedHosts: ['my-kanban-project.onrender.com'] 
   },
   preview: {
-    allowedHosts: ['my-kanban-project.onrender.com'], // This fixes the specific error you see
+    allowedHosts: ['my-kanban-project.onrender.com'],
     port: 10000,
     host: '0.0.0.0'
   }
