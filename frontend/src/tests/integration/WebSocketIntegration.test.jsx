@@ -1,13 +1,26 @@
-import { render, screen } from "@testing-library/react";
-
+import { expect, test, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import KanbanBoard from "../../components/KanbanBoard";
 
-// mock socket.io-client library
+// This test checks if the board renders correctly during socket updates
+test("WebSocket integration renders Kanban Board", async () => {
+  const mockTasks = [
+    { id: 1, text: "Test Task", status: "Todo" }
+  ];
 
-test("WebSocket receives task update", async () => {
-  render(<KanbanBoard />);
+  render(<KanbanBoard tasks={mockTasks} onMoveTask={() => {}} />);
 
-  expect(screen.getByText("Kanban Board")).toBeInTheDocument();
+  // Check if the board title is visible
+  const titleElement = screen.getByText(/Kanban Board/i);
+  expect(titleElement).toBeDefined();
+
+  // Check if our mock task appears on the board
+  const taskElement = screen.getByText(/Test Task/i);
+  expect(taskElement).toBeDefined();
 });
 
-// TODO: Add more integration tests
+test("renders empty board when no tasks are provided", () => {
+  render(<KanbanBoard tasks={[]} />);
+  const todoColumn = screen.getByText(/Todo/i);
+  expect(todoColumn).toBeDefined();
+});

@@ -4,16 +4,32 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
 
+// Initialize Socket.io with CORS enabled so the frontend can connect
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
 io.on("connection", (socket) => {
-  console.log("A user connected");
+  console.log("A user connected:", socket.id);
 
-  // TODO: Implement WebSocket events for task management
+  // Listen for the 'updateTask' event from any client
+  socket.on("updateTask", (updatedTasks) => {
+    console.log("Tasks updated, broadcasting to all clients...");
+    
+    // Broadcast the new task list to everyone EXCEPT the sender
+    // Use io.emit if you want to send it to everyone including the sender
+    socket.broadcast.emit("taskUpdated", updatedTasks);
+  });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    console.log("User disconnected:", socket.id);
   });
 });
 
-server.listen(5000, () => console.log("Server running on port 5000"));
+const PORT = 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
