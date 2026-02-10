@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import KanbanBoard from "./components/KanbanBoard";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://my-kanban-project.onrender.com");
 
 function App() {
   const [tasks, setTasks] = useState([]);
