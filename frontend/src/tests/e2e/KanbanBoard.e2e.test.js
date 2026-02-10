@@ -1,26 +1,82 @@
-import { test, expect } from '@playwright/test';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-test.describe('Kanban Board E2E Tests', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    // This must match the URL where your app is running
-    await page.goto('http://localhost:3000');
-  });
+// THIS IS THE KEY: We are pointing to your LIVE Render backend, not localhost
+const API_URL = "https://my-kanban-project.onrender.com";
 
-  test('should display the Kanban Board title', async ({ page }) => {
-    const title = page.locator('h2');
-    await expect(title).toContainText('Kanban Board');
-  });
+const KanbanBoard = () => {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState('');
 
-  test('should add a new task to the Todo column', async ({ page }) => {
-    const input = page.locator('input[placeholder="Enter task..."]');
-    const addButton = page.getByRole('button', { name: /Add Task/i });
+  // 1. Load tasks from the live database when the page opens
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
-    await input.fill('New E2E Task');
-    await addButton.click();
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/tasks`);
+      setTasks(response.data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
 
-    // Verify the task appears
-    const task = page.locator('text=New E2E Task');
-    await expect(task).toBeVisible();
-  });
-});
+  // 2. Save a new task to the live database
+  const addTask = async () => {
+    if (!newTask.trim()) return;
+    try {
+      const response = await axios.post(`${API_URL}/tasks`, { 
+        title: newTask, 
+        status: 'Todo' 
+      });
+      setTasks([...tasks, response.data]);
+      setNewTask('');
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+
+  // 3. Move a task (Update status)
+  const moveTask = async (id, newStatus) => {
+    try {
+      await axios.put(`${API_URL}/tasks/${id}`, { status: newStatus });
+      fetchTasks(); // Refresh list from database
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
+  };
+
+  return (
+    <div className="kanban-container">
+      <div className="input-section">
+        <input 
+          value={newTask} 
+          onChange={(e) => setNewTask(e.target.value)} 
+          placeholder="What needs to be done?" 
+        />
+        <button onClick={addTask}>Add Task</button>
+      </div>
+      
+      <div className="board">
+        {['Todo', 'In-Progress', 'Done'].map(status => (
+          <div key={status} className="column">
+            <h3>{status}</h3>
+            {tasks.filter(t => t.status === status).map(task => (
+              <div key={task._id} className="task-card">
+                {task.title}
+                {status !== 'Done' && (
+                  <button onClick={() => moveTask(task._id, status === 'Todo' ? 'In-Progress' : 'Done')}>
+                    →
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default KanbanBoard;
