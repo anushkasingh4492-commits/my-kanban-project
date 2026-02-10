@@ -62,7 +62,7 @@ function App() {
           marginBottom: '20px',
           textShadow: '2px 2px 4px rgba(0,0,0,0.05)'
         }}>
-          🌸 My Kanban Board
+          🌸🌸 My Kanban Board.
         </h1>
         
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
